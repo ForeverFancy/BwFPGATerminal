@@ -4,6 +4,7 @@ module Control(
     input [5:0] op,
     input cont,
     input run,
+    input [5:0] funct,
     output reg PCWriteCond,
     output reg PCWrite,
     output reg IorD,
@@ -11,12 +12,14 @@ module Control(
     output reg MemWrite,
     output reg MemtoReg,
     output reg IRWrite,
+    output reg RegSrcA,         //0 to select IR[25:21], 1 to select IR[20:16]
     output reg [1:0] PCSource,
     output reg [1:0] ALUOp,
     output reg ALUSrcA,
     output reg [2:0] ALUSrcB,
     output reg RegWrite,
-    output reg RegDst
+    output reg RegDst，
+    output reg save_pc
 );
     reg [4:0] state;
     reg [4:0] next_state;
@@ -39,6 +42,15 @@ module Control(
     parameter ready0 = 15;
     parameter ready1 = 16;
     parameter wait_reg = 17;
+    parameter shift_decode_and_register_fetch = 18;
+    parameter shift_exec = 19;
+    parameter jr_completion = 20;
+    parameter jal_completion = 21;
+
+    parameter sll_funct = 6'b000_000;
+    parameter srl_funct = 6'b000_010;
+    parameter sra_funct = 6'b000_011;
+    parameter jr_funct = 6'b001000;
 
     parameter lw = 6'b100_011;
     parameter sw = 6'b101_011;
@@ -46,11 +58,15 @@ module Control(
     parameter beq = 6'b000_100;
     parameter bne = 6'b000_101;
     parameter j = 6'b000_010;
+    parameter jal = 6'b000_011;
     parameter addi = 6'b001_000;
+    parameter addiu = 6'b001_001;
     parameter andi = 6'b001_100;
     parameter ori = 6'b001_101;
     parameter xori = 6'b001_110;
     parameter slti = 6'b001_010;
+    parameter sltiu = 6'b001_011;
+    parameter lui = 6'b001_111;
 
     always @(posedge clk or negedge rst_n) begin
         if(~rst_n)
@@ -75,12 +91,14 @@ module Control(
                 MemWrite=0;
                 MemtoReg=0;
                 IRWrite=0;
+                RegSrcA=0;
                 PCSource=2'b00;
                 ALUOp=2'b00;
                 ALUSrcA=0;
                 ALUSrcB=3'b000;
                 RegWrite=0;
                 RegDst=0;
+                save_pc=0;
             end
             wait_mem:
             begin
@@ -91,12 +109,14 @@ module Control(
                 MemWrite=0;
                 MemtoReg=0;
                 IRWrite=0;
+                RegSrcA=0;
                 PCSource=2'b00;
                 ALUOp=2'b00;
                 ALUSrcA=0;
                 ALUSrcB=3'b000;
                 RegWrite=0;
                 RegDst=0;
+                save_pc=0;
             end
             instruction_fetch:
             begin
@@ -106,6 +126,7 @@ module Control(
                 MemRead=1;
                 MemWrite=0;
                 MemtoReg=0;
+                RegSrcA=0;
                 IRWrite=1;
                 PCSource=2'b00;
                 ALUOp=2'b00;
@@ -125,10 +146,18 @@ module Control(
                 // IRWrite=0;
                 // PCSource=2'b00;
                 ALUOp=2'b00;
+                RegSrcA=0;
                 ALUSrcA=0;
                 ALUSrcB=3'b011;
                 // RegWrite=0;
                 // RegDst=0;
+            end
+            shift_decode_and_register_fetch:
+            begin
+                ALUOp=2'b00;
+                RegSrcA=1;
+                ALUSrcA=0;
+                ALUSrcB=3'b011;
             end
             memory_address_compution:
             begin
@@ -226,6 +255,23 @@ module Control(
                 RegWrite=0;
                 RegDst=0;
             end
+            shift_exec:
+            begin
+                //RegSrcA=0;
+                PCWriteCond=0;
+                PCWrite=0;
+                IorD=0;
+                MemRead=0;
+                MemWrite=0;
+                MemtoReg=0;
+                IRWrite=0;
+                PCSource=2'b00;
+                ALUOp=2'b10;
+                ALUSrcA=1;
+                ALUSrcB=3'b101;         //101 for shamt
+                RegWrite=0;
+                RegDst=0;
+            end
             r_completion:
             begin
                 PCWriteCond=0;
@@ -268,6 +314,39 @@ module Control(
                 MemtoReg=0;
                 IRWrite=0;
                 PCSource=2'b10;
+                ALUOp=2'b00;
+                ALUSrcA=0;
+                ALUSrcB=3'b000;
+                RegWrite=0;
+                RegDst=0;
+            end
+            jal_completion:
+            begin
+                PCWriteCond=0;
+                PCWrite=1;
+                IorD=0;
+                MemRead=0;
+                MemWrite=0;
+                MemtoReg=0;
+                IRWrite=0;
+                PCSource=2'b10;
+                ALUOp=2'b00;
+                ALUSrcA=0;
+                ALUSrcB=3'b000;
+                RegWrite=0;
+                RegDst=0;
+                save_pc=1;
+            end
+            jr_completion:
+            begin
+                PCWriteCond=0;
+                PCWrite=1;
+                IorD=0;
+                MemRead=0;
+                MemWrite=0;
+                MemtoReg=0;
+                IRWrite=0;
+                PCSource=2'b11;
                 ALUOp=2'b00;
                 ALUSrcA=0;
                 ALUSrcB=3'b000;
@@ -324,6 +403,7 @@ module Control(
             end
             default:
             begin
+                RegSrcA=0;
                 PCWriteCond=0;
                 PCWrite=0;
                 IorD=0;
@@ -337,6 +417,7 @@ module Control(
                 ALUSrcB=3'b000;
                 RegWrite=0;
                 RegDst=0;
+                save_pc=0;
             end
         endcase
     end
@@ -358,7 +439,27 @@ module Control(
             end
             wait_mem:
             begin
+                case (op)
+                    r_type:
+                    begin
+                        case (funct)
+                            sll_funct: next_state=shift_decode_and_register_fetch;
+                            srl_funct: next_state=shift_decode_and_register_fetch;
+                            sra_funct: next_state=shift_decode_and_register_fetch; 
+                            default: next_state=instruction_decode_and_register_fetch;
+                        endcase
+                    end 
+                    default: next_state=instruction_decode_and_register_fetch;
+                endcase
                 next_state=instruction_decode_and_register_fetch;
+            end
+            shift_decode_and_register_fetch:
+            begin
+                next_state=shift_exec;
+            end
+            shift_exec:
+            begin
+                next_state=r_completion;
             end
             instruction_decode_and_register_fetch:
             begin
@@ -373,7 +474,10 @@ module Control(
                     end
                     r_type:
                     begin
-                        next_state=execution;
+                    case (funct)
+                        jr_funct:next_state=jr_completion; 
+                        default: next_state=execution;
+                    endcase
                     end
                     beq:
                     begin
@@ -387,9 +491,21 @@ module Control(
                     begin
                         next_state=jump_completion;
                     end
+                    jal:
+                    begin
+                        next_state=jal_completion;
+                    end
                     addi:
                     begin
                         next_state=i_exec;
+                    end
+                    addiu:
+                    begin
+                        next_state=i_logic_exec;
+                    end
+                    lui:
+                    begin
+                        next_state=i_logic_exec;
                     end
                     andi:
                     begin
@@ -406,6 +522,10 @@ module Control(
                     slti:
                     begin
                         next_state=i_exec;
+                    end
+                    sltiu:
+                    begin
+                        next_state=i_logic_exec;
                     end
                     default:
                     begin
@@ -474,6 +594,24 @@ module Control(
                     next_state=ready0;
             end
             jump_completion:
+            begin
+                if(cont==1)
+                    next_state=instruction_fetch;
+                else if(cont==0 && run==1)
+                    next_state=ready1;
+                else
+                    next_state=ready0;
+            end
+            jal_completion:
+            begin
+                if(cont==1)
+                    next_state=instruction_fetch;
+                else if(cont==0 && run==1)
+                    next_state=ready1;
+                else
+                    next_state=ready0;
+            end
+            jr_completion:
             begin
                 if(cont==1)
                     next_state=instruction_fetch;

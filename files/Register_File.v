@@ -5,6 +5,8 @@ module Register_File #(parameter M = 3,parameter N = 3)
     input [M:0] ra2,
     input [M:0] wa,
     input [N:0] wd,
+    input [31:0] PC,
+    input save_pc,
     input we,
     input rst_n,
     input clk,
@@ -26,6 +28,10 @@ module Register_File #(parameter M = 3,parameter N = 3)
         else if(we)
         begin
             mem[wa]=wd;
+        end
+        else if(save_pc)
+        begin
+            mem[((1<<(M+1))-1)]=PC+4;
         end
     end
 

@@ -18,7 +18,8 @@ module Op_Decoder(
     parameter SLT = 4'H09;
     parameter NON = 4'H10;
     parameter SLTU = 4'H11;
-
+    parameter LUI = 4'H12;
+    parameter SLL = 4'H13;
 
     always @(*) begin
         if(ALUOp==2'b00)
@@ -48,10 +49,13 @@ module Op_Decoder(
         begin
             case (i_op)
                 3'b000:temp_op=ADD;
+                3'b001:temp_op=ADD;
                 3'b100:temp_op=AND;
                 3'b101:temp_op=OR;
                 3'b110:temp_op=XOR;
                 3'b010:temp_op=SLT;
+                3'b011:temp_op=SLT;
+                3'b111:temp_op=LUI;
                 default: temp_op=NON;
             endcase
         end

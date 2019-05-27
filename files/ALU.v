@@ -22,6 +22,8 @@ module ALU #(parameter N = 5)
     localparam SLT = 4'H09;
     localparam NON = 4'H10;
     localparam SLTU = 4'H11;
+    localparam LUI = 4'H12;
+    localparam SLL = 4'H13;
 
     localparam CF = 4'b1000;
     localparam S = 4'b0100;
@@ -141,6 +143,20 @@ module ALU #(parameter N = 5)
                 if(temp_res[N]==1)
                     temp_flag=temp_flag+S;
             end          
+            LUI: begin
+                temp_flag=0;
+                temp_res=0;
+                temp_res=a<<16;
+                if(temp_res==0)
+                    temp_flag=ZERO;
+            end
+            SLL: begin
+                temp_flag=0;
+                temp_res=0;
+                temp_res=a << b;
+                if(temp_res==0)
+                    temp_flag=ZERO;
+            end
           default: begin
             temp_res=0;
             temp_flag=0;
