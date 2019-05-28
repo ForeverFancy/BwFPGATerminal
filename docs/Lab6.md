@@ -12,5 +12,5 @@
 
 添加的指令：
 - R型中的： ADDU, SUBU, SLTU, SLLV, SRLV, SRAV, SLL, SRL, SRA <!-- ir[15:11]<-ir[20:16]<<shamt(ir[10:6]) -->
-- I型中的： ADDIU, SLTIU, <!--LUI rt<-imm<<16 -->
+- I型中的： ADDIU, SLTIU, LUI <!--rt<-imm<<16 -->
 - 跳转指令： JR, JAL
