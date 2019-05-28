@@ -88,13 +88,15 @@ module CPU(
     assign mem_addr=IorD ? ALUout:PC;
     wire [7:0] read_addr;
     wire [7:0] write_addr;
+    wire [31:0] v_addr;
+    wire [31:0] v_out_data;
 
     assign read_addr=mem_addr[9:2];
     assign write_addr=MemWrite ? mem_addr[9:2] : ddu_addr;
 
     assign mem_write_data=Read_data2;
-    Mem my_mem (.clk(clk), .rst_n(rst_n), .we(MemWrite), .write_data(mem_write_data),
-    .write_addr(write_addr), .read_addr(read_addr), .data(mem_data), .data2(MDR));
+    Mem my_mem (.clk(clk), .rst_n(rst_n), .we(MemWrite), .write_data(mem_write_data), .v_addr(v_addr),
+    .write_addr(write_addr), .read_addr(read_addr), .data(mem_data), .data2(MDR), .v_out_data(v_out_data));
     
     //control unit
     Control control_unit (.clk(clk), .rst_n(rst_n), .cont(cont), .run(run), .funct(funct), .op(op),

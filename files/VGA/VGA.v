@@ -24,7 +24,7 @@ endmodule // Counter16
 module VGA(
     input Clk,
     input Reset,
-    input ascii,
+    input [5:0] ascii,
     output vga_h_sync,
     output vga_v_sync,
     output [3:0] VGA_G,
