@@ -18,7 +18,7 @@ module Control(
     output reg ALUSrcA,
     output reg [2:0] ALUSrcB,
     output reg RegWrite,
-    output reg RegDst，
+    output reg RegDst,
     output reg save_pc
 );
     reg [4:0] state;
