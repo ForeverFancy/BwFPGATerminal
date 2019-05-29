@@ -80,6 +80,7 @@ module CPU(
     assign reg_addr1 = RegSrcA == 0 ? IR[25:21] : IR[20:16];
     assign reg_addr2 = IR[20:16];
     assign reg_addr3 = ddu_addr[4:0];
+    
     //32 regs.
     Register_File #(4,31) my_reg (.ra0(reg_addr1), .ra1(reg_addr2), .ra2(reg_addr3), .wa(reg_write_addr), .save_pc(save_pc), .PC(PC),
     .wd(reg_write_data), .we(RegWrite), .rst_n(rst_n), .clk(clk), .rd0(Read_data1), .rd1(Read_data2), .rd2(reg_data));

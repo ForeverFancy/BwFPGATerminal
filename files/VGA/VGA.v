@@ -24,7 +24,7 @@ endmodule // Counter16
 module VGA(
     input Clk,
     input Reset,
-    input [5:0] ascii,
+   // input [5:0] ascii,
     output vga_h_sync,
     output vga_v_sync,
     output [3:0] VGA_G,
@@ -64,7 +64,7 @@ module VGA(
     assign row=vcount-V_BEGIN;
    
     assign clk_60Hz=(hcount==0)&&(vcount==0);
-    pixels_ctrl pixels_ctrl_unit (.clk(clk_60Hz), .rst_n(rst_n), .row(row), .col(col), .ascii(ascii), .color(c));
+    pixels_ctrl pixels_ctrl_unit (.clk(clk_60Hz), .rst_n(rst_n), .row(row), .col(col), .color(c));
     
     wire de;
     assign de=(hcount>=H_BEGIN) && (hcount<H_END) && (vcount>=V_BEGIN) && (vcount<V_END);
