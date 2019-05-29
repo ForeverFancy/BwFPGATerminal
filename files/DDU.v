@@ -51,8 +51,8 @@ module seg_display(
 endmodule
 
 module DDU(
-    input CLK,
-    input reset,
+    input clk,
+    input rst_n,
     input cont,
     input step,
     input mem,
@@ -60,27 +60,39 @@ module DDU(
     input dec,
     input [7:0] initaddr,
     input IR,
+    input [8:0] row,
+    input [9:0] col,
+    input UART_TXD_IN,
     output ru,
     output [7:0] an,
     output [6:0] seg,
     output reg dp,
+    output [7:0] ascii,
     output [15:0] led
 );
-    wire [31:0] mem_data;
     wire [31:0] reg_data;
     wire [31:0] ddu_data;
     wire [31:0] PC;
     wire [31:0] ir;
     reg run;
     reg [31:0] addr;
-    wire rst_n;
-    wire clk;
-    // assign run=step;
     assign ru=run;
-    clk_wiz_0 my_clk (.clk_in1(CLK), .reset(reset), .locked(rst_n), .clk_out1(clk));
-    
-    CPU my_CPU (.clk(clk), .rst_n(rst_n), .cont(cont), .run(run), .ddu_addr(addr), .mem_data(mem_data), .reg_data(reg_data), .PC(PC), .ir(ir));
+    wire [31:0] MDR;
+    wire CPU_mem_write;
+    wire [31:0] CPU_mem_write_data;
+    wire [7:0] CPU_write_addr;
+    wire [7:0] CPU_read_addr;
+    wire [31:0] CPU_mem_data;
+    wire [11:0] VGA_addr;
 
+    assign VGA_addr = 80 * row[8:4] + col[9:3];
+    
+    CPU my_CPU (.clk(clk), .rst_n(rst_n), .cont(cont), .run(run), .CPU_MDR(MDR), .ddu_addr(addr), .reg_data(reg_data), .PC(PC), .ir(ir), .CPU_mem_write(CPU_mem_write), .CPU_write_addr(CPU_write_addr) ,.CPU_mem_write_data(CPU_mem_write_data), .CPU_read_addr(CPU_read_addr));
+
+    Mem my_mem (.clk(clk), .rst_n(rst_n), .UART_TXD_IN(UART_TXD_IN), .we(CPU_mem_write),
+    .write_data(CPU_mem_write_data), .VGA_addr(VGA_addr),
+    .write_addr(CPU_write_addr), .read_addr(CPU_read_addr), .data(CPU_mem_data), .data2(MDR), .ascii(ascii));
+    
     wire [31:0] count;
     counter my_counter (.clk(clk), .rst_n(rst_n), .count(count));
     
@@ -150,7 +162,7 @@ module DDU(
 
     reg [3:0] x;
     reg [7:0] en;
-    assign ddu_data = mem ? mem_data : IR ? ir : reg_data;
+    assign ddu_data = mem ? CPU_mem_data : IR ? ir : reg_data;
     
     always @(posedge clk or negedge rst_n) begin
     if(~rst_n)

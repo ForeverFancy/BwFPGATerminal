@@ -1,7 +1,7 @@
 module pixels_ctrl(
     input clk,
     input rst_n,
-    //input [5:0] ascii,
+    input [7:0] ascii,
     input [8:0] row,
     input [9:0] col,
     output reg [11:0] color
@@ -14,12 +14,6 @@ wire [9:0] col_end;
 
 //80*30 mem
 wire [127:0] data;
-wire [7:0] ascii;
-
-wire [11:0] addr;
-assign addr= 80 * row[8:4] + col[9:3];
-
-dist_mem_gen_1 vram (.dpra(addr), .clk(clk), .we(0), .a(addr), .d(0), .dpo(ascii));
 
 paint paint_ctrl (.ascii(ascii), .data(data));
 

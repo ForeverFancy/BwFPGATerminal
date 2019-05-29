@@ -4,10 +4,15 @@ module CPU(
     input cont,
     input run,
     input [31:0] ddu_addr,
-    output [31:0] mem_data,
+    input [31:0] CPU_MDR,
     output [31:0] reg_data,
     output [31:0] ir,
-    output reg [31:0] PC
+    output reg [31:0] PC,
+    output CPU_mem_write,
+    output [31:0] CPU_mem_write_data,
+    output [7:0] CPU_write_addr,
+    output [7:0] CPU_read_addr
+
 );  
     wire [31:0] Read_data1;
     wire [31:0] Read_data2;
@@ -35,6 +40,7 @@ module CPU(
     wire [5:0] funct;
     wire [15:0] imm;
 
+    assign MDR=CPU_MDR;
     assign op=IR[31:26];
     assign i_op=IR[28:26];
     assign shamt=IR[10:6];
@@ -80,13 +86,14 @@ module CPU(
     assign reg_addr1 = RegSrcA == 0 ? IR[25:21] : IR[20:16];
     assign reg_addr2 = IR[20:16];
     assign reg_addr3 = ddu_addr[4:0];
-    
+
     //32 regs.
     Register_File #(4,31) my_reg (.ra0(reg_addr1), .ra1(reg_addr2), .ra2(reg_addr3), .wa(reg_write_addr), .save_pc(save_pc), .PC(PC),
     .wd(reg_write_data), .we(RegWrite), .rst_n(rst_n), .clk(clk), .rd0(Read_data1), .rd1(Read_data2), .rd2(reg_data));
     
     //Mem unit
     assign mem_addr=IorD ? ALUout:PC;
+    assign CPU_mem_write_data=mem_write_data;
     wire [7:0] read_addr;
     wire [7:0] write_addr;
     wire [31:0] v_addr;
@@ -96,8 +103,6 @@ module CPU(
     assign write_addr=MemWrite ? mem_addr[9:2] : ddu_addr;
 
     assign mem_write_data=Read_data2;
-    Mem my_mem (.clk(clk), .rst_n(rst_n), .we(MemWrite), .write_data(mem_write_data), .v_addr(v_addr),
-    .write_addr(write_addr), .read_addr(read_addr), .data(mem_data), .data2(MDR), .v_out_data(v_out_data));
     
     //control unit
     Control control_unit (.clk(clk), .rst_n(rst_n), .cont(cont), .run(run), .funct(funct), .op(op),
@@ -105,7 +110,11 @@ module CPU(
     .MemRead(MemRead), .MemWrite(MemWrite), .MemtoReg(MemtoReg),
     .IRWrite(IRWrite), .RegSrcA(RegSrcA), .PCSource(PCSource), .ALUOp(ALUOp), 
     .ALUSrcA(ALUSrcA), .ALUSrcB(ALUSrcB), .RegWrite(RegWrite), .RegDst(RegDst), .save_pc(save_pc));
-    
+
+    assign CPU_mem_write=MemWrite;
+    assign CPU_write_addr=write_addr;
+    assign CPU_read_addr=read_addr;
+
     wire [31:0] PC_Jump;
     assign PC_Jump = {PC[31:28], IR[25:0], 2'b00};
     
