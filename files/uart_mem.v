@@ -25,27 +25,28 @@ module uart_mem (
     output i_Rx_Next
   
 );
-    reg ready_bit;
+    wire ready_bit;
     reg ready_bit_prev;
     assign mem_rdata[31]    =   o_Rx_DV;    // Ready bit
     // assign mem_rdata[30]    =   o_Rx_DV;   // Valid bit
     assign mem_rdata[7:0]   =   o_Rx_Byte;
     assign mem_rdata[30:8]  =   23'b0;
-    // assign i_Rx_Next = ~ready_bit;
+    // assign i_Rx_Next = ready_bit;
     assign i_Rx_Next = ~ready_bit;
+    assign ready_bit = ~rst_n ? 1'b1 : mem_wen ? mem_wdata[31] :o_Rx_DV;
     
-    always @ (posedge clk or negedge rst_n) 
-      begin
-        if (~rst_n) begin
-            ready_bit <= 1'b1;
-        end else begin
-            if (mem_wen) begin
-                ready_bit <= mem_wdata[31];
-            end else begin
-                ready_bit <= o_Rx_DV;
-            end
-        end
-      end
+    // always @ (posedge clk or negedge rst_n) 
+    //   begin
+    //     if (~rst_n) begin
+    //         ready_bit <= 1'b1;
+    //     end else begin
+    //         if (mem_wen) begin
+    //             ready_bit <= mem_wdata[31];
+    //         end else begin
+    //             ready_bit <= o_Rx_DV;
+    //         end
+    //     end
+    //   end
     
     // always @ (posedge clk or negedge rst_n)
     //   begin

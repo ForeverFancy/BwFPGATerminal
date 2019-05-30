@@ -106,7 +106,7 @@ module uart_rx
           begin
             // Wait CLKS_PER_BIT-1 clock cycles for Stop bit to finish
             // However we can call our little CPU earlier
-            r_Rx_DV           <= 1'b1;
+            
             
             if (r_Clock_Count < CLKS_PER_BIT-1)
               begin
@@ -116,12 +116,14 @@ module uart_rx
             else
               begin
                 r_Clock_Count <= 0;
+                r_Rx_DV           <= 1'b1;
                 r_SM_Main     <= s_WAIT_FOR_NEXT;
               end
           end // case: s_RX_STOP_BIT
           
         s_WAIT_FOR_NEXT:
           begin
+          
             if (i_Rx_Next)
               begin
                 // Okay, we can go to CLEANUP
