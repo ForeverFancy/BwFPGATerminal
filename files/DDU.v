@@ -63,12 +63,14 @@ module DDU(
     input [8:0] row,
     input [9:0] col,
     input UART_TXD_IN,
+    output [7:0] byte,
+    output done,
     output ru,
     output [7:0] an,
     output [6:0] seg,
     output reg dp,
     output [7:0] ascii,
-    output [15:0] led
+    output [4:0] led
 );
     wire [31:0] reg_data;
     wire [31:0] ddu_data;
@@ -80,8 +82,8 @@ module DDU(
     wire [31:0] MDR;
     wire CPU_mem_write;
     wire [31:0] CPU_mem_write_data;
-    wire [7:0] CPU_write_addr;
-    wire [7:0] CPU_read_addr;
+    wire [12:0] CPU_write_addr;
+    wire [12:0] CPU_read_addr;
     wire [31:0] CPU_mem_data;
     wire [11:0] VGA_addr;
 
@@ -91,13 +93,14 @@ module DDU(
 
     Mem my_mem (.clk(clk), .rst_n(rst_n), .UART_TXD_IN(UART_TXD_IN), .we(CPU_mem_write),
     .write_data(CPU_mem_write_data), .VGA_addr(VGA_addr),
-    .write_addr(CPU_write_addr), .read_addr(CPU_read_addr), .data(CPU_mem_data), .data2(MDR), .ascii(ascii));
+    .write_addr(CPU_write_addr), .read_addr(CPU_read_addr), .data(CPU_mem_data), .byte(byte), .done(done),
+     .data2(MDR), .ascii(ascii));
     
     wire [31:0] count;
     counter my_counter (.clk(clk), .rst_n(rst_n), .count(count));
     
-    assign led[15:11]=addr[4:0];
-    assign led[10:0]=PC[10:0];
+    assign led=addr[4:0];
+    //assign led[10:0]=PC[10:0];
     // assign addr=initaddr;
 
     parameter MOVE_PERIOD = 25_000_000;

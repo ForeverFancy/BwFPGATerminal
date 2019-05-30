@@ -10,8 +10,8 @@ module CPU(
     output reg [31:0] PC,
     output CPU_mem_write,
     output [31:0] CPU_mem_write_data,
-    output [7:0] CPU_write_addr,
-    output [7:0] CPU_read_addr
+    output [12:0] CPU_write_addr,
+    output [12:0] CPU_read_addr
 
 );  
     wire [31:0] Read_data1;
@@ -94,13 +94,13 @@ module CPU(
     //Mem unit
     assign mem_addr=IorD ? ALUout:PC;
     assign CPU_mem_write_data=mem_write_data;
-    wire [7:0] read_addr;
-    wire [7:0] write_addr;
+    wire [12:0] read_addr;
+    wire [12:0] write_addr;
     wire [31:0] v_addr;
     wire [31:0] v_out_data;
 
-    assign read_addr=mem_addr[9:2];
-    assign write_addr=MemWrite ? mem_addr[9:2] : ddu_addr;
+    assign read_addr=mem_addr[14:2];
+    assign write_addr=MemWrite ? mem_addr[14:2] : ddu_addr;
 
     assign mem_write_data=Read_data2;
     

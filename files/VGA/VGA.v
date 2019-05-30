@@ -24,15 +24,18 @@ endmodule // Counter16
 module VGA(
     input clk,
     input rst_n,
-   // input [5:0] ascii,
+    input [7:0] ascii,
+    output [8:0] o_row,                     
+    output [9:0] o_col,
     output vga_h_sync,
     output vga_v_sync,
-    output de,
-    output clk_60Hz,
-    output [8:0] row,                      
-    output [9:0] col
+    output [11:0] color
     );
-         
+    
+    wire [8:0] row;                     
+    wire [9:0] col;                      
+    
+    wire [11:0] c;
 	parameter H_SYNC = 96;
 	parameter H_BEGIN = 144;
 	parameter H_END = 784;
@@ -41,6 +44,8 @@ module VGA(
 	parameter V_BEGIN = 31;
 	parameter V_END = 511;
 	parameter V_PERIOD = 521;
+
+    wire clk_60Hz;
     
     wire [9:0] hcount;
     Counter16 hcounter (.Clk(clk), .rst(rst_n), .range(H_PERIOD), .count(hcount));
@@ -53,9 +58,12 @@ module VGA(
     assign row=vcount-V_BEGIN;
    
     assign clk_60Hz=(hcount==0)&&(vcount==0);
+    pixels_ctrl pixels_ctrl_unit (.clk(clk_60Hz), .rst_n(rst_n), .ascii(ascii), .row(row), .col(col), .color(c));
     
+    wire de;
     assign de=(hcount>=H_BEGIN) && (hcount<H_END) && (vcount>=V_BEGIN) && (vcount<V_END);
+    assign color=de?c:0;
     
-    
-    
+    assign o_row=row;
+    assign o_col=col;
 endmodule

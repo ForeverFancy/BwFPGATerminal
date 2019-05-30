@@ -1,5 +1,5 @@
 module uart_rx 
-  #(parameter CLKS_PER_BIT = 434)
+  #(parameter CLKS_PER_BIT = 217)  //217
   (
    input        i_Clock,            // Connect to memory clock for better performance
    input        i_Rx_Serial,
@@ -13,6 +13,7 @@ module uart_rx
   localparam s_RX_DATA_BITS   = 3'b010;
   localparam s_RX_STOP_BIT    = 3'b011;
   localparam s_WAIT_FOR_NEXT  = 3'b100;
+  localparam s_WAIT_FOR_NEXT_1  = 3'b110;
   localparam s_CLEANUP        = 3'b101;
    
   reg           r_Rx_Data_R = 1'b1;
@@ -129,6 +130,19 @@ module uart_rx
             else
               begin
                 r_SM_Main     <= s_WAIT_FOR_NEXT;
+              end
+          end
+
+        s_WAIT_FOR_NEXT_1:
+          begin
+            if (i_Rx_Next==1)
+              begin
+                // Okay, we can go to CLEANUP
+                r_SM_Main     <= s_CLEANUP;
+              end
+            else
+              begin
+                r_SM_Main     <= s_WAIT_FOR_NEXT_1;
               end
           end
         

@@ -5,6 +5,6 @@ module paint(
 
 //96*128bit
 
-dist_mem_gen_0 my_mem (.a(ascii), .spo(data));
+dist_mem_gen_0 ascii_rom (.a(ascii), .spo(data));
 
 endmodule // paint

@@ -8,24 +8,23 @@ module top(
     input dec,
     input [7:0] initaddr,
     input IR,
-    input [8:0] row,
-    input [9:0] col,
     input UART_TXD_IN,
+    output [7:0] byte,
+    output done,
     output ru,
     output [7:0] an,
     output [6:0] seg,
-    output reg dp,
-    output [7:0] ascii,
-    output [15:0] led,
+    output dp,
+    output [6:0] o_asc,
+    //output [4:0] led,
     output vga_h_sync,
     output vga_v_sync,
-    output [3:0] VGA_G,
-    output [3:0] VGA_R,
-    output [3:0] VGA_B
+    output [11:0] color
 );
     wire clk;
     wire rst_n;
-    clk_wiz_0 my_clk (.clk_in1(CLK), .reset(reset), .locked(rst_n), .clk_out1(clk));
+
+    clk_wiz_0 CLOCK (.clk_in1(CLK), .reset(reset), .clk_out1(clk), .locked(rst_n));    
 
     wire de;
     wire clk_60Hz;
@@ -33,20 +32,14 @@ module top(
     wire [9:0] col;
     wire [11:0] c;
     wire [7:0] ascii;
+    wire [4:0] led;
+    assign o_asc=ascii[6:0];
 
-    VGA my_VGA (.clk(clk), .rst_n(rst_n), .vga_h_sync(vga_h_sync), .vga_v_sync(vga_v_sync), .de(de), .clk_60Hz(clk_60Hz), .row(row), .col(col));
-    
-    pixels_ctrl pixels_ctrl_unit (.clk(clk_60Hz), .rst_n(rst_n), .row(row),  .col(col), .ascii(ascii), .color(c));
+    VGA my_VGA (.clk(clk), .rst_n(rst_n), .ascii(ascii), .vga_h_sync(vga_h_sync), .vga_v_sync(vga_v_sync), .o_row(row), .o_col(col), .color(color));
     
     DDU my_DDU (.clk(clk), .rst_n(rst_n), .cont(cont), .step(step), .mem(mem),
     .inc(inc), .dec(dec), .initaddr(initaddr), .IR(IR), .row(row), .col(col),
-    .UART_TXD_IN(UART_TXD_IN) .ru(ru), .an(an), .seg(seg), .dp(dp),
+    .UART_TXD_IN(UART_TXD_IN), .ru(ru), .an(an), .seg(seg), .dp(dp), .byte(byte), .done(done),
     .ascii(ascii), .led(led));
-
-    wire [11:0] color;
-    assign color = de ? c : 0;
-    assign VGA_R=color[11:8];
-    assign VGA_G=color[7:4];
-    assign VGA_B=color[3:0];
-    
+   
 endmodule // top

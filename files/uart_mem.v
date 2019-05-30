@@ -3,10 +3,6 @@
 // and no parity bit.  When receive is complete o_rx_dv will be
 // driven high for one clock cycle.
 // 
-// Set Parameter CLKS_PER_BIT as follows:
-// CLKS_PER_BIT = (Frequency of i_Clock)/(Frequency of UART)
-// Example: 10 MHz Clock, 115200 baud UART
-// (10000000)/(115200) = 87
   
 // +----------------------------------------------+
 // |  31   |  30   | 29 ...  8   |    7  ... 0    |
@@ -31,23 +27,32 @@ module uart_mem (
 );
     reg ready_bit;
     reg ready_bit_prev;
-    assign mem_rdata[31]    =   ready_bit; // Ready bit
-    assign mem_rdata[30]    =   o_Rx_DV;   // Valid bit
+    assign mem_rdata[31]    =   o_Rx_DV;    // Ready bit
+    // assign mem_rdata[30]    =   o_Rx_DV;   // Valid bit
     assign mem_rdata[7:0]   =   o_Rx_Byte;
-    assign mem_rdata[29:8]  =   23'b0;
-    assign i_Rx_Next = ready_bit;
+    assign mem_rdata[30:8]  =   23'b0;
+    // assign i_Rx_Next = ~ready_bit;
+    assign i_Rx_Next = ~ready_bit;
     
     always @ (posedge clk or negedge rst_n) 
       begin
         if (~rst_n) begin
-            ready_bit <= 1'b0;
+            ready_bit <= 1'b1;
         end else begin
             if (mem_wen) begin
                 ready_bit <= mem_wdata[31];
             end else begin
-                ready_bit <= ready_bit;
+                ready_bit <= o_Rx_DV;
             end
         end
       end
-
+    
+    // always @ (posedge clk or negedge rst_n)
+    //   begin
+    //     if (~rst_n) begin
+    //       ready_bit_prev <= 1'b0;
+    //     end else begin
+    //       ready_bit_prev <= ready_bit;
+    //     end
+    //   end
 endmodule
