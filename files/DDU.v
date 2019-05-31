@@ -95,7 +95,7 @@ module DDU(
     Mem my_mem (.clk(clk), .rst_n(rst_n), .UART_TXD_IN(UART_TXD_IN), .we(CPU_mem_write),
     .write_data(CPU_mem_write_data), .VGA_addr(VGA_addr),
     .write_addr(CPU_write_addr), .read_addr(CPU_read_addr), .data(CPU_mem_data), .byte(byte), .done(done),
-     .data2(MDR), .ascii(ascii));
+     .data2(MDR), .serial(serial), .ascii(ascii));
     
     wire [31:0] count;
     counter my_counter (.clk(clk), .rst_n(rst_n), .count(count));
