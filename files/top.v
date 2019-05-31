@@ -17,6 +17,7 @@ module top(
     output dp,
     output [6:0] o_asc,
     //output [4:0] led,
+    output UART_RXD_OUT,
     output vga_h_sync,
     output vga_v_sync,
     output [11:0] color
@@ -40,6 +41,6 @@ module top(
     DDU my_DDU (.clk(clk), .rst_n(rst_n), .cont(cont), .step(step), .mem(mem),
     .inc(inc), .dec(dec), .initaddr(initaddr), .IR(IR), .row(row), .col(col),
     .UART_TXD_IN(UART_TXD_IN), .ru(ru), .an(an), .seg(seg), .dp(dp), .byte(byte), .done(done),
-    .ascii(ascii), .led(led));
+    .ascii(ascii), .led(led), .serial(UART_RXD_OUT));
    
 endmodule // top
