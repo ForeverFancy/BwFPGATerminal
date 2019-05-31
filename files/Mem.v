@@ -12,6 +12,7 @@ module Mem(
     output [31:0] data2,
     output [7:0] byte,
     output done,
+    output serial,
     output [31:0] ascii
 );
     parameter display_ram_start = 256;
@@ -38,10 +39,14 @@ module Mem(
     wire o_Rx_DV;
     wire [7:0] o_Rx_Byte;
     wire [31:0] uart_data;
+    wire o_Tx_Active;
+    wire o_Tx_Done;
     assign done=o_Rx_DV;
     assign byte=o_Rx_Byte;
     uart_rx uart_receiver (.i_Clock(clk), .i_Rx_Serial(UART_TXD_IN), .i_Rx_Next(i_Rx_Next), .o_Rx_DV(o_Rx_DV), .o_Rx_Byte(o_Rx_Byte));
 
+    uart_tx uart_transmitter (.i_Clock(clk), .i_Tx_DV(o_Rx_DV), .i_Tx_Byte(o_Rx_Byte), .o_Tx_Active(o_Tx_Active), .o_Tx_Serial(serial), .o_Tx_Done(o_Tx_Done));
+    
     uart_mem my_uart_mem (.mem_wen(we && is_uart_ram), .clk(clk), .rst_n(rst_n), .mem_wdata(write_data), .o_Rx_DV(o_Rx_DV), .o_Rx_Byte(o_Rx_Byte), .mem_rdata(uart_data), .i_Rx_Next(i_Rx_Next));
 
     assign data2 = read_addr < 256 ? main_ram_data : uart_data;

@@ -69,6 +69,7 @@ module DDU(
     output [7:0] an,
     output [6:0] seg,
     output reg dp,
+    output serial,
     output [7:0] ascii,
     output [4:0] led
 );
