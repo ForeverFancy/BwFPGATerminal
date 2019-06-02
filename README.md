@@ -200,3 +200,6 @@ res:    .word   0x00640000
 
 [2. MIPS ISA](https://blog.csdn.net/yixilee/article/details/4316617)
 
+[3. uart in Verilog for FPGA](https://www.nandland.com/vhdl/modules/module-uart-serial-port-rs232.html)
+
+
