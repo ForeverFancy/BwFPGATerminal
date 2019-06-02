@@ -196,10 +196,10 @@ res:    .word   0x00640000
 
 ## 参考文献
 
-[1. About uart](https://baike.baidu.com/item/UART/4429746?fr=aladdin)
+[1. About UART](https://baike.baidu.com/item/UART/4429746?fr=aladdin)
 
 [2. MIPS ISA](https://blog.csdn.net/yixilee/article/details/4316617)
 
-[3. uart in Verilog for FPGA](https://www.nandland.com/vhdl/modules/module-uart-serial-port-rs232.html)
+[3. UART in Verilog for FPGA](https://www.nandland.com/vhdl/modules/module-uart-serial-port-rs232.html)
 
 
